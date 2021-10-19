@@ -28,12 +28,15 @@ document.getElementById('item').addEventListener('keydown', function (e) {
 });
 
 function addItem (value) {
-  addItemToDOM(value);
   document.getElementById('item').value = '';
-  sendItemToAPI(value);
+  sendItemToAPI(value, (item) => {
+    console.log(item);
 
-  data.todo.push(value);
-  dataObjectUpdated();
+    //addItemToDOM(value);
+    //data.todo.push(value);
+    //dataObjectUpdated();
+  });
+
 }
 
 function renderTodoList() {
@@ -123,15 +126,17 @@ function addItemToDOM(text, completed) {
   list.insertBefore(item, list.childNodes[0]);
 }
 
-function sendItemToAPI(item) {
+function sendItemToAPI(item, callback) {
    var req = new XMLHttpRequest();
    req.open('POST', '/add');
    req.setRequestHeader('Content-Type', 'application/json');
    req.send(JSON.stringify({item: item}));
 
    req.addEventListener('load', () => {
-     console.log(req.responseText);
-     console.log('Request done!');
+      var results = JSON.parse(req.responseText);
+      if (results.error) return console.log(results.error);
+      
+      if (callback) callback(results);
    });
 
    req.addEventListener('error', () => {
